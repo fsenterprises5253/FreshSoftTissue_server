@@ -19,7 +19,7 @@ app.get("/api/health", (req, res) => {
 const USERS = [
   {
     userId: "Admin",
-    passwordHash: await bcrypt.hash("Rangwala", 10),
+    passwordHash: "$2b$10$fEWBL56Zf3WnujlH1Jyn4uVB9VooGKLJksj4CKl.ofBAMyAi/1X56",
   },
 ];
 
