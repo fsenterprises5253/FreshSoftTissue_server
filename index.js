@@ -1,10 +1,13 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config(); // ✅ Loads variables from .env (locally)
 
 const app = express();
 
-// ✅ Allow all origins (for Render frontend or Supabase)
+// ✅ Allow all origins (for Supabase + Render frontend)
 app.use(
   cors({
     origin: "*",
@@ -16,20 +19,16 @@ app.use(
 // ✅ Parse JSON requests
 app.use(express.json());
 
-// ✅ Health check (for Render uptime)
+// ✅ Health check (Render uptime)
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running fine ✅" });
 });
 
-// ✅ Simulated user data — FIXED: use static hash instead of regenerating each time
-// Password = "Rangwala"
-const USERS = [
-  {
-    userId: "Admin",
-    passwordHash:
-      "$2a$10$TjzUKA9eqXq8fU9uQvQ4R.EC8SkJr2gpgAyh3ShSYGZa5rULXRtM.", // 🔒 Static hash for "Rangwala"
-  },
-];
+// ✅ Load credentials from environment variables
+const ADMIN_USER = process.env.ADMIN_USER || "Admin";
+const ADMIN_PASSWORD_HASH =
+  process.env.ADMIN_PASSWORD_HASH ||
+  "$2a$10$TjzUKA9eqXq8fU9uQvQ4R.EC8SkJr2gpgAyh3ShSYGZa5rULXRtM."; // default hash for "Rangwala"
 
 // ✅ Login route
 app.post("/api/login", async (req, res) => {
@@ -38,10 +37,10 @@ app.post("/api/login", async (req, res) => {
     if (!userId || !password)
       return res.status(400).json({ message: "Missing credentials" });
 
-    const user = USERS.find((u) => u.userId === userId);
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    if (userId !== ADMIN_USER)
+      return res.status(401).json({ message: "Invalid credentials" });
 
-    const isValid = await bcrypt.compare(password, user.passwordHash);
+    const isValid = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
     if (!isValid)
       return res.status(401).json({ message: "Invalid credentials" });
 
