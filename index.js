@@ -4,22 +4,30 @@ import cors from "cors";
 
 const app = express();
 
-// ✅ Allow all origins (for Supabase + Render Frontend)
-app.use(cors({ origin: "*", methods: ["GET", "POST"], allowedHeaders: ["Content-Type"] }));
+// ✅ Allow all origins (for Render frontend or Supabase)
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 
 // ✅ Parse JSON requests
 app.use(express.json());
 
-// ✅ Health check (Render uses this to verify uptime)
+// ✅ Health check (for Render uptime)
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running fine ✅" });
 });
 
-// ✅ Simulated user data (for demo authentication)
+// ✅ Simulated user data — FIXED: use static hash instead of regenerating each time
+// Password = "Rangwala"
 const USERS = [
   {
     userId: "Admin",
-    passwordHash: await bcrypt.hash("Rangwala", 10),
+    passwordHash:
+      "$2a$10$TjzUKA9eqXq8fU9uQvQ4R.EC8SkJr2gpgAyh3ShSYGZa5rULXRtM.", // 🔒 Static hash for "Rangwala"
   },
 ];
 
@@ -34,7 +42,8 @@ app.post("/api/login", async (req, res) => {
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isValid)
+      return res.status(401).json({ message: "Invalid credentials" });
 
     res.json({ success: true, message: "Login successful ✅" });
   } catch (err) {
@@ -43,7 +52,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// ✅ Start the server
+// ✅ Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
