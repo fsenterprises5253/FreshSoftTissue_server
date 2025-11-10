@@ -21,10 +21,10 @@ app.post("/api/login", async (req, res) => {
   try {
     const { userId, password } = req.body;
     const user = USERS.find((u) => u.userId === userId);
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    if (!user) return res.status(401).json({ message: "Invalid credentials. Please Try again!" });
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isValid) return res.status(401).json({ message: "Invalid credentials. Please Try again!" });
 
     res.json({ success: true, message: "Login successful ✅" });
   } catch (err) {
